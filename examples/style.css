@@ -1,0 +1,34 @@
+
+body {
+	font-family: Calibri, Helvetica, Arial, sans-serif;
+	margin:20px;
+	background: #efefef;
+}
+
+.example {
+	background-image:url(background.png);
+	padding:20px;
+	margin: 20px 0;
+}
+
+.aqua {
+	background-image:url(aqua.png);
+	width:100%;
+	height:100px;
+}
+
+.list {
+	list-style-type: none;
+	text-align: center;
+}
+
+.list li {
+	display: block;
+	float:left;
+	padding:24px;
+	background-image: url(tab.png);
+}
+
+.clear {
+	clear:both;
+}
