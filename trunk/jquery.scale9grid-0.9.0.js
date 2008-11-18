@@ -61,29 +61,37 @@ $.fn.scale9Grid = function(grid) {
 			'display':'block'
 		});
 		
-		var image = new Image();
+		var imageWidth;
+		var imageHeight;
 		
 		var layoutGrid = function() {
 			var width = $target.innerWidth();
             var height = $target.innerHeight();
-            var imageWidth = image.width;
-            var imageHeight = image.height;
+            
+            if(width < gridLeft + gridRight || height < gridTop + gridBottom) {
+            	return;
+            }
             
             // TODO: optimize this by reusing existing divs
             $background.find('.s9cell').remove();
             
-            var innerWidth = width - gridRight;
-            var innerHeight = height - gridBottom;
-            
             for(var y = 0; y < height;)
             {
             	var cellHeight;
-            	if(y < innerHeight) {
-            		var maxCellHeight = y == 0 ? imageHeight - gridBottom : imageHeight - gridBottom - gridTop;
-            		cellHeight = Math.min(maxCellHeight, innerHeight - y);
+            	var verticalPosition;
+            	if(y == 0) {
+            		verticalPosition = "top";
+            		cellHeight = Math.min(imageHeight - gridBottom, height - gridBottom);
             	}
-            	else
-            		cellHeight = gridBottom;
+            	else if(y + imageHeight - gridTop >= height) {
+            		verticalPosition = "bottom";
+            		cellHeight = height - y;
+            	}
+            	else {
+            		verticalPosition = "center";
+            		cellHeight = Math.min(imageHeight - gridTop - gridBottom, height - y - gridBottom);
+            	}
+            	
             	for(var x = 0; x < width;)
             	{
             		var cellElement = document.createElement('div');
@@ -91,57 +99,28 @@ $.fn.scale9Grid = function(grid) {
             		var $cell = $(cellElement);
             		
             		var cellWidth;
-            		if(x < innerWidth) {
-            			var maxCellWidth = x == 0 ? imageWidth - gridRight : imageWidth - gridRight - gridLeft;
-            			cellWidth = Math.min(maxCellWidth, innerWidth - x);
+            		var horizontalPosition;
+            		if(x == 0) {
+            			horizontalPosition = "left";
+            			cellWidth = Math.min(imageWidth - gridRight, width - gridRight);
             		}
-            		else
-            			cellWidth = gridRight;
-            		
-            		// set the background position property
-            		var backgroundPosition;
-            		var left = x == 0;
-            		var right = x + cellWidth >= width;
-            		var top = y == 0;
-            		var bottom = y + cellHeight >= height;
-            		
-            		if(left && top) {
-            			backgroundPosition = 'top left';
-            		}
-            		else if(left && bottom) {
-            			backgroundPosition = 'bottom left';
-            		}
-            		else if(right && top) {
-            			backgroundPosition = 'top right';
-            		}
-            		else if(right && bottom) {
-            			backgroundPosition = 'bottom right';
-            		}
-            		else if(left) {
-            			backgroundPosition = 'center left';
-            		}
-            		else if(right) {
-            			backgroundPosition = 'center right';
-            		}
-            		else if(top) {
-            			backgroundPosition = 'top center';
-            		}
-            		else if(bottom) {
-            			backgroundPosition = 'bottom center';
+            		else if(x + imageWidth - gridBottom >= width) {
+            			horizontalPosition = "right";
+            			cellWidth = width - x;
             		}
             		else {
-            			backgroundPosition = 'center center';
+            			horizontalPosition = "center";
+            			cellWidth = Math.min(imageWidth - gridLeft - gridRight, width - x - gridRight);
             		}
             		
             		$cell.css({
             			'position':'absolute',
             			'left':x + 'px',
             			'top':y + 'px',
-            			'overflow':'hidden',
             			'width':cellWidth + 'px',
             			'height':cellHeight + 'px',
             			'background-image':backgroundImage,
-            			'background-position':backgroundPosition
+            			'background-position':verticalPosition + ' ' + horizontalPosition
             		});
             		$cell.addClass('s9cell');
             		
@@ -151,7 +130,13 @@ $.fn.scale9Grid = function(grid) {
             }
 		};
 		
+		var image = new Image();
 		$(image).load(function() {
+			if(image.width < gridLeft + gridRight || image.height < gridTop + gridBottom) {
+				return; //invalid inputs
+			}
+			imageWidth = image.width;
+			imageHeight = image.height;
 			layoutGrid();
 			// TODO: we should resize when the text size is changed also
 			$(window).resize(layoutGrid);
