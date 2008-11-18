@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="scale9grid" default="examples">
+	
+	<taskdef name="jsmin"
+	        classname="net.matthaynes.jsmin.JSMin_Task"
+	        classpath="lib/jsmin.0.2.3.jar"/>
+	
+	
+	<property file="build.properties" />
+	
+    <target name="compile" depends="clean">
+    	<copy file="src\jquery.scale9grid.js" tofile="${bin}/${outputfile}" />
+    	<jsmin suffix="true" force="true" destdir="${bin}">
+    		<fileset dir="${bin}" includes="${outputfile}" />
+    	</jsmin>
+    	<zip destfile="${bin}/${outputzip}">
+    		<fileset dir="${bin}" />
+    	</zip>
+    </target>
+	
+	<target name="examples" depends="compile">
+		<copy todir="${bin}/examples" filtering="on">
+			<filterset>
+				<filter token="outputminfile" value="${outputminfile}"/>
+			</filterset>
+			<fileset file="examples/index.html" />
+		</copy>
+		<copy todir="${bin}/examples">
+			<fileset dir="examples" excludes="src.png, index.html" />
+			<fileset file="${bin}/${outputminfile}" />
+		</copy>
+	</target>
+	
+	<target name="clean">
+		<mkdir dir="${bin}" />
+		<delete includeemptydirs="true">
+			<fileset dir="${bin}"  />
+		</delete>
+	</target>
+</project>
