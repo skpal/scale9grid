@@ -1,0 +1,7 @@
+/*
+ * jQuery 9-Grid Scaling Plugin @version@
+ *
+ * Copyright (c) 2008 Gordon L. Hempton ( http://hempton.com )
+ * Licensed under the MIT license
+ */
+ 
