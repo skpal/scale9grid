@@ -8,11 +8,25 @@
 	
 	<property file="build.properties" />
 	
+	<filterchain id="addCopyright">
+		<concatfilter prepend="copyright.txt" />
+		<replacetokens>
+			<token key="version" value="${version}" />
+		</replacetokens>
+	</filterchain>
+	
     <target name="compile" depends="clean">
-    	<copy file="src\jquery.scale9grid.js" tofile="${bin}/${outputfile}" />
-    	<jsmin suffix="true" force="true" destdir="${bin}">
+    	<copy file="src\jquery.scale9grid.js" tofile="${bin}/${outputfile}" filtering="on">
+    		<filterchain refid="addCopyright" />
+    	</copy>
+    	<mkdir dir="temp"/>
+    	<jsmin suffix="true" destdir="temp"  >
     		<fileset dir="${bin}" includes="${outputfile}" />
     	</jsmin>
+    	<copy file="temp/${outputminfile}" todir="${bin}">
+    		<filterchain refid="addCopyright" />
+    	</copy>
+    	<delete dir="temp" includeemptydirs="true" />
     	<zip destfile="${bin}/${outputzip}">
     		<fileset dir="${bin}" />
     	</zip>

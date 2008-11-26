@@ -1,9 +1,3 @@
-/*
- * jQuery 9-Grid Scaling Plugin 0.9.0
- *
- * Copyright (c) 2008 Gordon L. Hempton ( http://hempton.com )
- * Licensed under the MIT license
- */
 (function($) {
 
 $.fn.scale9Grid = function(grid) {
@@ -37,6 +31,11 @@ $.fn.scale9Grid = function(grid) {
 			'text-align':'left'
 		});
 		
+		// ie6 breaks on a floated child with a staticly positioned parent
+		if($.browser.msie && $.browser.version < 7 && $target.css('float') != 'none' && $target.css('position') == 'static') {
+			$target.css('position', 'relative');
+		}
+		
 		$target.wrapInner('<div class="s9gwrapper"></div>');
 		var $wrapper = $target.find('.s9gwrapper');
 		$wrapper.css({
@@ -64,16 +63,25 @@ $.fn.scale9Grid = function(grid) {
 		var imageWidth;
 		var imageHeight;
 		
+		var lastWidth = 0;
+		var lastHeight = 0;
+		
+		var cells = new Array();
+		
 		var layoutGrid = function() {
 			var width = $target.innerWidth();
             var height = $target.innerHeight();
             
-            if(width < gridLeft + gridRight || height < gridTop + gridBottom) {
+            if(width < gridLeft + gridRight || height < gridTop + gridBottom
+            		|| (width == lastWidth && height == lastHeight)) {
             	return;
             }
             
-            // TODO: optimize this by reusing existing divs
-            $background.find('.s9cell').remove();
+            lastWidth = width;
+            lastHeight = height;
+            
+            var cellIndex = 0;
+            var existingCells = cells.length;
             
             for(var y = 0; y < height;)
             {
@@ -92,11 +100,22 @@ $.fn.scale9Grid = function(grid) {
             		cellHeight = Math.min(imageHeight - gridTop - gridBottom, height - y - gridBottom);
             	}
             	
-            	for(var x = 0; x < width;)
+            	for(var x = 0; x < width; cellIndex++)
             	{
-            		var cellElement = document.createElement('div');
-            		$background.append(cellElement);
-            		var $cell = $(cellElement);
+            		var $cell;
+            		if(cellIndex < existingCells) {
+            			$cell = cells[cellIndex];
+            		}
+            		else {
+            			cellElement = document.createElement('div');
+            			$background.append(cellElement);
+            			$cell = $(cellElement);
+            			$cell.css({
+            				'position':'absolute',
+            				'background-image':backgroundImage
+            			});
+            			cells.push($cell);
+            		}
             		
             		var cellWidth;
             		var horizontalPosition;
@@ -114,20 +133,21 @@ $.fn.scale9Grid = function(grid) {
             		}
             		
             		$cell.css({
-            			'position':'absolute',
             			'left':x + 'px',
             			'top':y + 'px',
             			'width':cellWidth + 'px',
             			'height':cellHeight + 'px',
-            			'background-image':backgroundImage,
             			'background-position':verticalPosition + ' ' + horizontalPosition
             		});
-            		$cell.addClass('s9cell');
             		
             		x += cellWidth;
             	}
             	y += cellHeight;
             }
+            for( var i = cellIndex; i < existingCells; i++) {
+            	cells[i].remove();
+            }
+            cells.splice(cellIndex, cells.length - cellIndex);
 		};
 		
 		var image = new Image();
@@ -138,7 +158,8 @@ $.fn.scale9Grid = function(grid) {
 			imageWidth = image.width;
 			imageHeight = image.height;
 			layoutGrid();
-			// TODO: we should resize when the text size is changed also
+			// TODO: should resize when the text size is changed also
+			// TODO: this event should be removed if the element is removed from the DOM
 			$(window).resize(layoutGrid);
 		}).attr('src', backgroundUrl);
 		
