@@ -35,13 +35,13 @@
 	<target name="examples" depends="compile">
 		<copy todir="${bin}/examples" filtering="on">
 			<filterset>
-				<filter token="outputminfile" value="${outputminfile}"/>
+				<filter token="scale9Grid" value="${outputfile}"/>
 			</filterset>
 			<fileset file="examples/index.html" />
 		</copy>
 		<copy todir="${bin}/examples">
 			<fileset dir="examples" excludes="src.png, index.html" />
-			<fileset file="${bin}/${outputminfile}" />
+			<fileset file="${bin}/${outputfile}" />
 		</copy>
 	</target>
 	
