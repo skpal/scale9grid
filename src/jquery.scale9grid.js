@@ -1,5 +1,20 @@
 (function($) {
+	
+var supportsBorderImage = false;
+var borderImageStyle;
 
+// TODO: we should check webkit's version as well
+if($.browser.safari) {
+	supportsBorderImage = true;
+	borderImageStyle = '-webkit-border-image';
+} else if($.browser.mozilla
+		// requires firefox 3.1 or greater
+		&& $.browser.version.substr(0,3)=="1.9"
+		&& parseFloat($.browser.version.substr(3)) > 1.0)  {
+	supportsBorderImage = true;
+	borderImageStyle = '-moz-border-image';
+}
+	
 $.fn.extend({
 	
 	scale9Grid: function(settings) {
@@ -64,6 +79,15 @@ $.fn.extend({
 			});
 			$background.addClass('s9gbackground');
 			
+			if(supportsBorderImage) {
+				var cssProperties = {
+					'border-width':gridTop + 'px ' + gridRight + 'px ' + gridBottom + 'px ' + gridLeft + 'px ',
+					'position':'absolute'
+				}
+				cssProperties[borderImageStyle] = backgroundImage + ' ' + gridTop + ' ' + gridRight + ' ' + gridBottom + ' ' + gridLeft + ' stretch stretch';
+				$background.css(cssProperties);
+			}
+			
 			var imageWidth;
 			var imageHeight;
 			
@@ -78,6 +102,14 @@ $.fn.extend({
 	            
 	            if(width < gridLeft + gridRight || height < gridTop + gridBottom
 	            		|| (width == lastWidth && height == lastHeight)) {
+	            	return;
+	            }
+	            
+	            if(supportsBorderImage) {
+	            	$background.css({
+	            		'width':width - gridLeft - gridRight + 'px',
+	            		'height':height - gridTop - gridBottom + 'px'
+	            	})
 	            	return;
 	            }
 	            
@@ -197,5 +229,5 @@ $.fn.extend({
 	}
 	
 });
-	
+
 })(jQuery);
